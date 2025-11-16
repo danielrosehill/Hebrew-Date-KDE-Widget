@@ -56,7 +56,7 @@ Kirigami.FormLayout {
         model: [
             "26 / Cheshvan / 5786",
             "26 Cheshvan 5786",
-            "כ״ו חשון תשפ״ו (Hebrew)"
+            "כ״ו חשוון תשפ״ו (Hebrew)"
         ]
     }
 
