@@ -14,7 +14,7 @@
     "Name": "Hebrew Date Widget",
     "Id": "com.danielrosehill.hebrewdate",
     "Description": "A panel plasmoid that displays both Gregorian and Hebrew calendar dates.",
-    "Icon": "view-calendar",
+    "Icon": "hebrewdate-icon",
     "License": "MIT",
     "Version": "1.0.0",
     "EnabledByDefault": true,
