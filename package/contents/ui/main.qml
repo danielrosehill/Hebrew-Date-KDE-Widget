@@ -29,16 +29,19 @@ PlasmoidItem {
     property string hebrewText: "…"
     property string lastError: ""
 
-    preferredRepresentation: fullRepresentation
+    preferredRepresentation: compactRepresentation
 
-    fullRepresentation: Item {
-        implicitWidth: Math.max(dateColumn.implicitWidth + 12, 100)
-        implicitHeight: dateColumn.implicitHeight + 8
+    compactRepresentation: Item {
+        Layout.fillWidth: false
+        Layout.fillHeight: true
+        Layout.minimumWidth: dateColumn.implicitWidth
+        Layout.preferredWidth: dateColumn.implicitWidth
+        Layout.maximumWidth: dateColumn.implicitWidth
 
         ColumnLayout {
             id: dateColumn
             anchors.centerIn: parent
-            spacing: 2
+            spacing: 0
 
             // First line (either Gregorian or Hebrew based on displayOrder)
             QQC2.Label {
@@ -47,9 +50,10 @@ PlasmoidItem {
                 text: root.displayOrder === 0 ? root.gregorianText : root.hebrewText
                 font.bold: root.fontBold
                 font.italic: root.fontItalic
-                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                font.pixelSize: Kirigami.Theme.smallFont.pixelSize
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.NoWrap
             }
 
             // Second line (either Hebrew or Gregorian based on displayOrder)
@@ -60,13 +64,48 @@ PlasmoidItem {
                 font.bold: root.fontBold
                 font.italic: root.fontItalic
                 font.pixelSize: {
-                    var baseSize = Kirigami.Theme.defaultFont.pixelSize
+                    var baseSize = Kirigami.Theme.smallFont.pixelSize
                     return root.displayOrder === 0 ?
                         (baseSize * root.hebrewSizeRatio / 100) :
                         baseSize
                 }
                 horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.NoWrap
+                opacity: 0.85
+            }
+        }
+    }
+
+    fullRepresentation: Item {
+        Layout.preferredWidth: Kirigami.Units.gridUnit * 15
+        Layout.preferredHeight: Kirigami.Units.gridUnit * 6
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: Kirigami.Units.smallSpacing
+
+            QQC2.Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: root.displayOrder === 0 ? root.gregorianText : root.hebrewText
+                font.bold: root.fontBold
+                font.italic: root.fontItalic
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize * 1.2
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            QQC2.Label {
+                Layout.alignment: Qt.AlignHCenter
+                text: root.displayOrder === 0 ? root.hebrewText : root.gregorianText
+                font.bold: root.fontBold
+                font.italic: root.fontItalic
+                font.pixelSize: {
+                    var baseSize = Kirigami.Theme.defaultFont.pixelSize * 1.2
+                    return root.displayOrder === 0 ?
+                        (baseSize * root.hebrewSizeRatio / 100) :
+                        baseSize
+                }
+                horizontalAlignment: Text.AlignHCenter
                 opacity: 0.9
             }
         }

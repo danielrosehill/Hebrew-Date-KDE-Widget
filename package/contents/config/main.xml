@@ -21,7 +21,7 @@
 
         <!-- Gregorian date format -->
         <entry name="gregorianFormat" type="String">
-            <default>dddd dd MMMM yyyy</default>
+            <default>dd MMM yyyy</default>
         </entry>
 
         <!-- Show Hebrew year -->

@@ -68,7 +68,7 @@ Kirigami.FormLayout {
     QQC2.TextField {
         id: gregorianFormatField
         Kirigami.FormData.label: "Gregorian Format"
-        placeholderText: "dddd dd MMMM yyyy"
+        placeholderText: "dd MMM yyyy"
     }
 
     QQC2.Label {
