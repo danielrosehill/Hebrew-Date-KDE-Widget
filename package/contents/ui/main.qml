@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls as QQC2
 import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasmoid
+import org.kde.kirigami as Kirigami
 import Qt.labs.settings 1.1
 
 import "../code/Hebcal.js" as Hebcal
@@ -11,80 +12,153 @@ PlasmoidItem {
     id: root
 
     // Configuration bindings
-    readonly property string language: plasmoid.configuration.language
-    readonly property bool showYear: plasmoid.configuration.showYear
+    readonly property int displayOrder: plasmoid.configuration.displayOrder
+    readonly property int hebrewFormat: plasmoid.configuration.hebrewFormat
+    readonly property int hebrewSizeRatio: plasmoid.configuration.hebrewSizeRatio
+    readonly property string gregorianFormat: plasmoid.configuration.gregorianFormat
+    readonly property bool showHebrewYear: plasmoid.configuration.showHebrewYear
+    readonly property bool showGregorianYear: plasmoid.configuration.showGregorianYear
+    readonly property bool fontBold: plasmoid.configuration.fontBold
+    readonly property bool fontItalic: plasmoid.configuration.fontItalic
+    readonly property string userCity: plasmoid.configuration.userCity
+    readonly property string userLatitude: plasmoid.configuration.userLatitude
+    readonly property string userLongitude: plasmoid.configuration.userLongitude
 
     // State
-    property string displayText: "…"
+    property string gregorianText: "…"
+    property string hebrewText: "…"
     property string lastError: ""
-
-    readonly property date now: new Date()
 
     preferredRepresentation: fullRepresentation
 
     fullRepresentation: Item {
-        implicitWidth: Math.max(textItem.implicitWidth + 8, 80)
-        implicitHeight: textItem.implicitHeight + 8
+        implicitWidth: Math.max(dateColumn.implicitWidth + 12, 100)
+        implicitHeight: dateColumn.implicitHeight + 8
 
-        QQC2.Label {
-            id: textItem
+        ColumnLayout {
+            id: dateColumn
             anchors.centerIn: parent
-            text: root.displayText
-            elide: Text.ElideRight
-            wrapMode: Text.NoWrap
+            spacing: 2
+
+            // First line (either Gregorian or Hebrew based on displayOrder)
+            QQC2.Label {
+                id: firstLine
+                Layout.alignment: Qt.AlignHCenter
+                text: root.displayOrder === 0 ? root.gregorianText : root.hebrewText
+                font.bold: root.fontBold
+                font.italic: root.fontItalic
+                font.pixelSize: Kirigami.Theme.defaultFont.pixelSize
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+            }
+
+            // Second line (either Hebrew or Gregorian based on displayOrder)
+            QQC2.Label {
+                id: secondLine
+                Layout.alignment: Qt.AlignHCenter
+                text: root.displayOrder === 0 ? root.hebrewText : root.gregorianText
+                font.bold: root.fontBold
+                font.italic: root.fontItalic
+                font.pixelSize: {
+                    var baseSize = Kirigami.Theme.defaultFont.pixelSize
+                    return root.displayOrder === 0 ?
+                        (baseSize * root.hebrewSizeRatio / 100) :
+                        baseSize
+                }
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                opacity: 0.9
+            }
         }
     }
 
     Settings {
         id: store
         category: "org.kde.plasma.hebrewdate"
-        property string lastText: ""
+        property string lastGregorianText: ""
+        property string lastHebrewText: ""
         property string lastISODate: ""
     }
 
     function scheduleNextUpdate() {
-        // Compute ms until next midnight local time
+        // Update every minute to catch sunset transition
+        // Also schedule a midnight update
         const now = new Date()
-        const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1)
-        updateTimer.interval = Math.max(1000, next - now)
+        const nextMinute = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+                                     now.getHours(), now.getMinutes() + 1, 1)
+        updateTimer.interval = Math.max(1000, nextMinute - now)
         updateTimer.restart()
     }
 
-    function updateHebrewDate() {
+    function updateDates() {
         lastError = ""
-        displayText = "…"
         const d = new Date()
         const iso = d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0') + "-" + d.getDate().toString().padStart(2, '0')
-        Hebcal.fetchHebrewDate(d, language, showYear, function (ok, text, err) {
-            if (ok) {
-                displayText = text
-                store.lastText = text
-                store.lastISODate = iso
-            } else {
-                if (store.lastISODate === iso && store.lastText) {
-                    displayText = store.lastText
+
+        // Update Gregorian date
+        updateGregorianDate(d)
+
+        // Fetch Hebrew date from API
+        Hebcal.fetchDualDate(
+            d,
+            userLatitude,
+            userLongitude,
+            hebrewFormat,
+            showHebrewYear,
+            function (ok, data, hebrewStr, err) {
+                if (ok) {
+                    hebrewText = hebrewStr
+                    store.lastHebrewText = hebrewStr
+                    store.lastISODate = iso
                 } else {
-                    displayText = "Hebrew date unavailable"
+                    if (store.lastISODate === iso && store.lastHebrewText) {
+                        hebrewText = store.lastHebrewText
+                    } else {
+                        hebrewText = "Hebrew date unavailable"
+                    }
+                    lastError = err || ""
                 }
-                lastError = err || ""
             }
-        })
+        )
+
         scheduleNextUpdate()
     }
 
-    Component.onCompleted: updateHebrewDate()
+    function updateGregorianDate(d) {
+        // Format the Gregorian date according to user preference
+        var format = gregorianFormat || "dddd dd MMMM yyyy"
+
+        // Handle showGregorianYear setting
+        if (!showGregorianYear) {
+            // Remove year patterns from format
+            format = format.replace(/yyyy/g, "").replace(/yy/g, "").trim()
+            // Clean up any trailing/leading separators
+            format = format.replace(/[\s,\/-]+$/, "").replace(/^[\s,\/-]+/, "")
+        }
+
+        gregorianText = Qt.formatDate(d, format)
+        store.lastGregorianText = gregorianText
+    }
+
+    Component.onCompleted: updateDates()
 
     Connections {
         target: plasmoid.configuration
-        function onLanguageChanged() { root.updateHebrewDate() }
-        function onShowYearChanged() { root.updateHebrewDate() }
+        function onDisplayOrderChanged() { root.updateDates() }
+        function onHebrewFormatChanged() { root.updateDates() }
+        function onHebrewSizeRatioChanged() { }  // Just triggers UI update
+        function onGregorianFormatChanged() { root.updateDates() }
+        function onShowHebrewYearChanged() { root.updateDates() }
+        function onShowGregorianYearChanged() { root.updateDates() }
+        function onUserLatitudeChanged() { root.updateDates() }
+        function onUserLongitudeChanged() { root.updateDates() }
     }
 
     Timer {
         id: updateTimer
-        interval: 60 * 60 * 1000 // fallback hourly
+        interval: 60 * 1000 // Update every minute
         repeat: true
         running: false
-        onTriggered: root.updateHebrewDate()
+        onTriggered: root.updateDates()
     }
 }

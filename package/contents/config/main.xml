@@ -4,11 +4,60 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
     <kcfgfile name="plasma-org.kde.plasma.hebrewdate-appletrc"/>
     <group name="General">
-        <entry name="language" type="String">
-            <default>both</default>
+        <!-- Display order: 0 = Gregorian first, 1 = Hebrew first -->
+        <entry name="displayOrder" type="Int">
+            <default>0</default>
         </entry>
-        <entry name="showYear" type="Bool">
+
+        <!-- Hebrew date format: 0 = "26 / Cheshvan / 5786", 1 = "26 Cheshvan 5786", 2 = Hebrew characters -->
+        <entry name="hebrewFormat" type="Int">
+            <default>1</default>
+        </entry>
+
+        <!-- Hebrew date size ratio (percentage of Gregorian size) -->
+        <entry name="hebrewSizeRatio" type="Int">
+            <default>100</default>
+        </entry>
+
+        <!-- Gregorian date format -->
+        <entry name="gregorianFormat" type="String">
+            <default>dddd dd MMMM yyyy</default>
+        </entry>
+
+        <!-- Show Hebrew year -->
+        <entry name="showHebrewYear" type="Bool">
             <default>true</default>
+        </entry>
+
+        <!-- Show Gregorian year -->
+        <entry name="showGregorianYear" type="Bool">
+            <default>true</default>
+        </entry>
+
+        <!-- Font settings -->
+        <entry name="fontFamily" type="String">
+            <default>FreeSans</default>
+        </entry>
+
+        <entry name="fontBold" type="Bool">
+            <default>false</default>
+        </entry>
+
+        <entry name="fontItalic" type="Bool">
+            <default>false</default>
+        </entry>
+
+        <!-- User location for sunset calculation -->
+        <entry name="userCity" type="String">
+            <default>Jerusalem</default>
+        </entry>
+
+        <entry name="userLatitude" type="String">
+            <default>31.7683</default>
+        </entry>
+
+        <entry name="userLongitude" type="String">
+            <default>35.2137</default>
         </entry>
     </group>
 </kcfg>
