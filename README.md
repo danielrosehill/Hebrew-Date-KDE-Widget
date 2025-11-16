@@ -1,24 +1,58 @@
 # Hebrew Date KDE Plasma 6 Widget
 
-A KDE Plasma 6 widget that displays both Gregorian and Hebrew calendar dates in your system tray. Perfect for keeping track of both calendars at a glance.
+[![GitHub](https://img.shields.io/badge/GitHub-danielrosehill%2FHebrew--Date--KDE--Widget-blue?logo=github)](https://github.com/danielrosehill/Hebrew-Date-KDE-Widget)
+[![OpenCode](https://img.shields.io/badge/OpenCode-danielrosehill%2Fhebrew--date--plasmoid-orange?logo=gitlab)](https://www.opencode.net/danielrosehill/hebrew-date-plasmoid)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-![Hebrew Date Widget](screenshots/widget-example.png)
+![alt text](screenshots/5.png)
+
+A KDE Plasma 6 widget that displays both Gregorian and Hebrew calendar dates in your system tray or on your desktop. Perfect for keeping track of both calendars at a glance with automatic sunset-aware date transitions.
+
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/1.png" width="400" alt="Widget in System Tray"/>
+  <img src="screenshots/5.png" width="400" alt="Widget Configuration"/>
+  <img src="screenshots/3.png" width="400" alt="Hebrew Date Formats"/>
+  <img src="screenshots/4.png" width="400" alt="Font Size Settings"/>
+</div>
 
 ## Features
 
+### Display Modes
 - **Dual Date Display**: Shows both Gregorian and Hebrew dates on separate lines
-- **Multiple Hebrew Formats**:
-  - `26 / Cheshvan / 5786` (with slashes)
-  - `26 Cheshvan 5786` (simple format)
-  - `כ״ו חשון תשפ״ו` (Hebrew characters)
-- **Customizable Display**:
-  - Choose date order (Gregorian first or Hebrew first)
-  - Adjust Hebrew date size (50-150% of Gregorian size)
-  - Show/hide year for either calendar
-  - Font styling (bold/italic)
+- **Single Date Mode**: Display Hebrew only or Gregorian only
+- **Flexible Ordering**: Choose which date appears first
+
+### Hebrew Date Formats
+- `26 / Cheshvan / 5786` (with slashes)
+- `26 Cheshvan 5786` (simple format)
+- `כ״ו חשון תשפ״ו` (Hebrew characters with gershayim)
+
+### Adaptive Font Sizing
+- **Context-Aware**: Automatically adjusts font size based on placement
+  - Larger fonts (default 18pt) when placed on desktop
+  - Smaller fonts (default 11pt) when in panel/system tray
+- **User Override**: Manually configure font sizes for both contexts
+- **Auto-Sizing Toggle**: Enable/disable automatic size adjustment
+
+### Customization Options
+- **Date Order**: Gregorian first or Hebrew first
+- **Size Ratio**: Adjust Hebrew date size (50-150% of Gregorian size)
+- **Year Display**: Show/hide year for either calendar
+- **Font Styling**: Bold and italic options
+- **Gregorian Format**: Fully customizable using Qt date format codes
+
+### Smart Date Handling
 - **Location-Aware**: Accounts for sunset (shkiah) when calculating Hebrew date transitions
-- **Compact Design**: Optimized for system tray placement
-- **Auto-Updates**: Refreshes every minute to catch sunset transitions
+- **Accurate Timing**: Uses Hebcal API with your coordinates for precise sunset calculation
+- **Efficient Polling**: Smart update scheduling instead of constant polling
+  - Updates at midnight (new Gregorian day)
+  - Updates 30 seconds after sunset (new Hebrew day)
+  - Checks every 4 hours if sunset time unknown
+  - Instant update on location changes
+- **Minimal Resource Usage**: Caches sunset time in lightweight persistent storage
+- **Offline Cache**: Displays last known date if API is temporarily unavailable
 
 ## Installation
 
@@ -78,6 +112,11 @@ Right-click the widget and select "Configure" to access settings:
 - Bold
 - Italic
 
+### Font Size
+- **Auto-sizing**: Enable automatic font adjustment based on widget location
+- **Desktop Font Size**: Configure font size for desktop placement (8-72pt)
+- **Panel/Tray Font Size**: Configure font size for panel/tray placement (6-36pt)
+
 ### Location Settings
 Configure your location for accurate sunset-based date transitions:
 - **City**: Your city name (for reference)
@@ -93,15 +132,29 @@ The widget uses the [Hebcal API](https://www.hebcal.com) to:
 2. Determine sunset times based on your location
 3. Automatically switch to the next Hebrew date after sundown
 
-The widget updates every minute to ensure accurate date display, especially around sunset time.
+### Efficient Update Strategy
+
+Instead of polling every minute, the widget uses intelligent scheduling:
+
+1. **On First Load**: Fetches current date and sunset time from API
+2. **Sunset Time Caching**: Stores today's sunset time in persistent settings
+3. **Strategic Updates**:
+   - **Before Sunset**: Schedules next update 30 seconds after sunset
+   - **After Sunset**: Schedules next update at midnight
+   - **No Cached Time**: Checks every 4 hours
+4. **Location Changes**: Instantly clears cache and updates
+
+This approach minimizes API calls and system resource usage while maintaining accuracy.
 
 ## Technical Details
 
 - **Platform**: KDE Plasma 6
 - **API**: Hebcal Converter API
-- **Update Frequency**: Every minute
-- **Fallback**: Caches last successful date if API is unavailable
+- **Update Strategy**: Smart polling (midnight + sunset transitions)
+- **Cache**: Persistent storage for dates and sunset times
+- **Fallback**: Displays cached date if API is unavailable
 - **Languages**: Supports both English transliteration and Hebrew characters
+- **Resource Usage**: Minimal - only 2-3 API calls per day typical
 
 ## Example Display
 
@@ -138,14 +191,32 @@ or
 
 **Date doesn't update at sunset**
 - Verify your latitude/longitude are correct
-- Widget updates every minute, so changes should appear within 60 seconds
+- Check console logs (run `journalctl -f` to see widget debug output)
+- Widget should update within 30 seconds after sunset
+- Try clearing the cache by changing your location and changing it back
 
-## License
+## Development
 
-GPL-3.0+
+### Creation
+Based on the [Date Only Widget](https://store.kde.org/p/2303033) for KDE Plasma
+
+### Development Process
+- **Primary Tool**: Claude Code
+- **Methodology**: Human-in-the-loop development
+- **Developer**: Daniel Rosehill
+
+### Validation
+Tested and validated on:
+- **OS**: Ubuntu 25.10
+- **Desktop**: KDE Plasma 6 (Wayland)
 
 ## Author
 
-Daniel Rosehill
+Built by Claude Code based upon [Date Only](https://store.kde.org/p/2303033). 
+
+Prompting/HITL:
+
+**Daniel Rosehill** 
 - Website: [danielrosehill.com](https://danielrosehill.com)
 - Email: public@danielrosehill.com
+- GitHub: [github.com/danielrosehill](https://github.com/danielrosehill) 

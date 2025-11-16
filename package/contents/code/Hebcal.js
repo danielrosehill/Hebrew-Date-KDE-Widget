@@ -6,21 +6,41 @@
 
 function pad2(n) { return (n < 10 ? "0" : "") + n }
 
+// Get Hebrew day-of-week letter (א-ו for Sunday-Friday, ש for Saturday)
+function getHebrewDayOfWeek(dateObj) {
+    var dayIndex = dateObj.getDay() // 0=Sunday, 1=Monday, ..., 6=Saturday
+    var hebrewDays = ["א", "ב", "ג", "ד", "ה", "ו", "ש"]
+    return hebrewDays[dayIndex]
+}
+
 // Format Hebrew date based on format option
 // format: 0 = "26 / Cheshvan / 5786", 1 = "26 Cheshvan 5786", 2 = Hebrew characters
-function formatHebrewDate(hd, hm, hy, format, showYear) {
+// showDayOfWeek: if true and format is 2 (Hebrew), prepend day-of-week letter with comma
+function formatHebrewDate(hd, hm, hy, format, showYear, showDayOfWeek, dateObj) {
     var yearPart = showYear ? hy : ""
+    var result = ""
 
     switch (format) {
         case 0:  // "26 / Cheshvan / 5786"
-            return showYear ? (hd + " / " + hm + " / " + hy) : (hd + " / " + hm)
+            result = showYear ? (hd + " / " + hm + " / " + hy) : (hd + " / " + hm)
+            break
         case 1:  // "26 Cheshvan 5786"
-            return showYear ? (hd + " " + hm + " " + hy) : (hd + " " + hm)
+            result = showYear ? (hd + " " + hm + " " + hy) : (hd + " " + hm)
+            break
         case 2:  // Will use Hebrew characters from API
             return null  // Signal to use API's hebrew field
         default:
-            return showYear ? (hd + " " + hm + " " + hy) : (hd + " " + hm)
+            result = showYear ? (hd + " " + hm + " " + hy) : (hd + " " + hm)
     }
+
+    // Add day-of-week for non-Hebrew formats if requested
+    // (For format 2, this will be handled separately since we use API's hebrew field)
+    if (showDayOfWeek && dateObj && format !== 2) {
+        var dayOfWeek = getHebrewDayOfWeek(dateObj)
+        result = dayOfWeek + ", " + result
+    }
+
+    return result
 }
 
 function stripHebrewYear(hebrewStr) {
@@ -37,8 +57,9 @@ function stripHebrewYear(hebrewStr) {
 // - latitude, longitude: user location for sunset calculation
 // - hebrewFormat: 0, 1, or 2 (see formatHebrewDate)
 // - showHebrewYear: boolean
+// - showHebrewDayOfWeek: boolean
 // - cb: callback(ok, gregorianData, hebrewData, err)
-function fetchDualDate(dateObj, latitude, longitude, hebrewFormat, showHebrewYear, cb) {
+function fetchDualDate(dateObj, latitude, longitude, hebrewFormat, showHebrewYear, showHebrewDayOfWeek, cb) {
     try {
         var gy = dateObj.getFullYear()
         var gm = dateObj.getMonth() + 1
@@ -83,9 +104,14 @@ function fetchDualDate(dateObj, latitude, longitude, hebrewFormat, showHebrewYea
                 if (hebrewFormat === 2 && data.hebrew) {
                     // Use Hebrew characters from API
                     hebrewStr = showHebrewYear ? data.hebrew : stripHebrewYear(data.hebrew)
+                    // Add Hebrew day-of-week if requested (only for Hebrew character format)
+                    if (showHebrewDayOfWeek) {
+                        var dayOfWeek = getHebrewDayOfWeek(dateObj)
+                        hebrewStr = dayOfWeek + ", " + hebrewStr
+                    }
                 } else {
                     // Use transliterated format
-                    hebrewStr = formatHebrewDate(data.hd, data.hm, data.hy, hebrewFormat, showHebrewYear)
+                    hebrewStr = formatHebrewDate(data.hd, data.hm, data.hy, hebrewFormat, showHebrewYear, showHebrewDayOfWeek, dateObj)
                 }
 
                 // Return data object for main.qml to format Gregorian date
@@ -94,7 +120,8 @@ function fetchDualDate(dateObj, latitude, longitude, hebrewFormat, showHebrewYea
                     hebrewMonth: data.hm,
                     hebrewYear: data.hy,
                     hebrewString: hebrewStr,
-                    gregorianDate: dateObj
+                    gregorianDate: dateObj,
+                    sunsetTime: sunsetTime || ""  // Pass sunset time to main.qml for caching
                 }
 
                 cb(true, result, hebrewStr, "")

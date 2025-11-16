@@ -5,13 +5,17 @@
       {
         "Name": "Daniel Rosehill",
         "Email": "public@danielrosehill.com"
+      },
+      {
+        "Name": "Claude Code",
+        "Email": "ai-assistant@anthropic.com"
       }
     ],
     "Name": "Hebrew Date Widget",
     "Id": "com.danielrosehill.hebrewdate",
     "Description": "A panel plasmoid that displays both Gregorian and Hebrew calendar dates.",
     "Icon": "view-calendar",
-    "License": "GPL-3.0+",
+    "License": "MIT",
     "Version": "1.0.0",
     "EnabledByDefault": true,
     "Category": "Date and Time",
