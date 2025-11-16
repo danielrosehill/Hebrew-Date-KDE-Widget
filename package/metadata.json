@@ -1,0 +1,27 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Daniel Rosehill",
+        "Email": "public@danielrosehill.com"
+      }
+    ],
+    "Name": "Hebrew Date Widget",
+    "Id": "com.danielrosehill.hebrewdate",
+    "Description": "A panel plasmoid that displays both Gregorian and Hebrew calendar dates.",
+    "Icon": "view-calendar",
+    "License": "GPL-3.0+",
+    "Version": "1.0.0",
+    "EnabledByDefault": true,
+    "Category": "Date and Time",
+    "ServiceTypes": [
+      "Plasma/Applet"
+    ]
+  },
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "X-Plasma-Provides": [
+    "org.kde.plasma.time",
+    "org.kde.plasma.date"
+  ]
+}
